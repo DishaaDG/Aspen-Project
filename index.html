@@ -181,48 +181,53 @@
 
    <script>
 const apiUrl = "https://authentic-activity-92e94f43c6.strapiapp.com/api/expeditions?populate=*";
-  const apiToken = "b5e7c45482daa5f444d101b5dca778a6f6cc6bca4e692927ede8e9133ea459112aef25f5a8a98ba153097a63aabf77b08d864606c0f1e9b79fc278a23f3e3000828326ff9a35e31b8af532c4537b77ea8c1c5ba0f4dd557241ce26cb6209c948b8f85ff5efaf16cce2a1a35520f01eb1a8bc37f3e73801e11206900afe4b2d9a";
+const apiToken = "b5e7c45482daa5f444d101b5dca778a6f6cc6bca4e692927ede8e9133ea459112aef25f5a8a98ba153097a63aabf77b08d864606c0f1e9b79fc278a23f3e3000828326ff9a35e31b8af532c4537b77ea8c1c5ba0f4dd557241ce26cb6209c948b8f85ffefaf16cce2a1a35520f01eb1a8bc37f3e73801e11206900afe4b2d9a";
 
-  async function loadExpeditions() {
-    const container = document.getElementById("expedition-list");
-    container.innerHTML = "Loading expeditions...";
+async function loadExpeditions() {
+  const container = document.getElementById("expedition-list");
+  container.innerHTML = "Loading expeditions...";
 
-    try {
-      const res = await fetch(apiUrl, {
-        headers: {
-          Authorization: `Bearer ${apiToken}`
-        }
-      });
-
-      if (!res.ok) throw new Error("Failed to fetch");
-
-      const data = await res.json();
-      container.innerHTML = "";
-
-      data.data.forEach(item => {
-        const expedition = item.attributes;
-        const imageUrl = expedition.image?.data?.attributes?.url
-          ? `http://localhost:1337${expedition.image.data.attributes.url}`
-          : "https://via.placeholder.com/400x300";
-
-        const card = `
-          <div class="bg-white shadow-lg rounded-2xl overflow-hidden hover:scale-105 transform transition">
-            <img src="${imageUrl}" alt="${expedition.title}" class="w-full h-56 object-cover">
-            <div class="p-4">
-              <h3 class="text-xl font-semibold mb-2">${expedition.title}</h3>
-              <p class="text-gray-600 mb-2">${expedition.location}</p>
-              <p class="text-gray-500">${expedition.description.substring(0, 120)}...</p>
-            </div>
-          </div>
-        `;
-        container.innerHTML += card;
-      });
-
-    } catch (err) {
-      console.error(err);
-      container.innerHTML = "Failed to load expeditions...";
+  try {
+    const res = await fetch(apiUrl, {
+      headers: {
+        Authorization: `Bearer ${apiToken}`,
+        "Content-Type": "application/json"
+      }
+    });
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
     }
+    const json = await res.json();
+    container.innerHTML = "";
+    json.data.forEach(item => {
+      const expedition = item.attributes;
+      // Use correct image URL
+      let imageUrl = "https://via.placeholder.com/400x300";
+      if (expedition.image?.data?.attributes?.url) {
+        // If the URL starts with '/', prefix with your Strapi domain
+        const url = expedition.image.data.attributes.url;
+        imageUrl = url.startsWith("http")
+          ? url
+          : `https://authentic-activity-92e94f43c6.strapiapp.com${url}`;
+      }
+
+      const card = `
+        <div class="bg-white shadow-lg rounded-2xl overflow-hidden hover:scale-105 transform transition">
+          <img src="${imageUrl}" alt="${expedition.title}" class="w-full h-56 object-cover">
+          <div class="p-4">
+            <h3 class="text-xl font-semibold mb-2">${expedition.title}</h3>
+            <p class="text-gray-600 mb-2">${expedition.location}</p>
+            <p class="text-gray-500">${expedition.description.substring(0, 120)}...</p>
+          </div>
+        </div>
+      `;
+      container.innerHTML += card;
+    });
+  } catch (err) {
+    console.error("Error loading expeditions:", err);
+    container.innerHTML = "Failed to load expeditions...";
   }
+}
 
   loadExpeditions();
 </script>
