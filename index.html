@@ -173,44 +173,9 @@
           <a href="#journal" class="text-sm text-gray-600">See all →</a>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <!-- Expedition Card -->
-          <article class="rounded-2xl overflow-hidden shadow-md hover-lift ease-soft glass">
-            <img src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=1200&auto=format&fit=crop" alt="Himalayas expedition" class="w-full h-44 object-cover">
-            <div class="p-5">
-              <h4 class="font-head text-lg">Himalayan Highways</h4>
-              <p class="mt-2 text-sm text-gray-600">A curated self-drive route through remote mountain passes, polish camp nights & panoramic vistas.</p>
-              <div class="mt-4 flex items-center justify-between">
-                <span class="text-sm font-semibold" style="color:var(--terracotta)">From $2,700</span>
-                <a href="#contact" class="text-sm px-3 py-2 rounded-md border border-gray-200">View Expedition</a>
-              </div>
-            </div>
-          </article>
-
-          <article class="rounded-2xl overflow-hidden shadow-md hover-lift ease-soft glass">
-            <img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1200&auto=format&fit=crop" alt="Morocco expedition" class="w-full h-44 object-cover">
-            <div class="p-5">
-              <h4 class="font-head text-lg">Sahara & Southern Morocco</h4>
-              <p class="mt-2 text-sm text-gray-600">Dunes, kasbahs, and coastal drives — a desert adventure with a refined edge.</p>
-              <div class="mt-4 flex items-center justify-between">
-                <span class="text-sm font-semibold text-gray-700">From $3,100</span>
-                <a href="#contact" class="text-sm px-3 py-2 rounded-md border border-gray-200">View Expedition</a>
-              </div>
-            </div>
-          </article>
-
-          <article class="rounded-2xl overflow-hidden shadow-md hover-lift ease-soft glass">
-            <img src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=1200&auto=format&fit=crop" alt="Patagonia expedition" class="w-full h-44 object-cover">
-            <div class="p-5">
-              <h4 class="font-head text-lg">Patagonia Coastal Drives</h4>
-              <p class="mt-2 text-sm text-gray-600">Wind-swept highways and glacier-view stops; an intimate route with boutique camping.</p>
-              <div class="mt-4 flex items-center justify-between">
-                <span class="text-sm font-semibold text-gray-700">From $3,900</span>
-                <a href="#contact" class="text-sm px-3 py-2 rounded-md border border-gray-200">View Expedition</a>
-              </div>
-            </div>
-          </article>
-        </div>
+        <div id="expedition-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Cards will load here dynamically from Strapi -->
+    </div>
       </div>
     </section>
 
@@ -684,6 +649,39 @@ document.querySelectorAll('#joinPrimary, #joinTop').forEach(btn => {
     setTimeout(() => formMsg.classList.add('hidden'), 5000);
     return false;
   }
+</script>
+
+<script>
+  const apiUrl = "http://localhost:1337/api/expeditions?populate=*";
+
+  async function loadExpeditions() {
+    const res = await fetch(apiUrl);
+    const data = await res.json();
+
+    const container = document.getElementById("expedition-list");
+    container.innerHTML = "";
+
+    data.data.forEach(item => {
+      const expedition = item.attributes;
+      const imageUrl = expedition.image?.data?.attributes?.url
+        ? `http://localhost:1337${expedition.image.data.attributes.url}`
+        : "https://via.placeholder.com/400x300";
+
+      const card = `
+        <div class="bg-white shadow-lg rounded-2xl overflow-hidden hover:scale-105 transform transition">
+          <img src="${imageUrl}" alt="${expedition.title}" class="w-full h-56 object-cover">
+          <div class="p-4">
+            <h3 class="text-xl font-semibold mb-2">${expedition.title}</h3>
+            <p class="text-gray-600 mb-2">${expedition.location}</p>
+            <p class="text-gray-500">${expedition.description.substring(0, 120)}...</p>
+          </div>
+        </div>
+      `;
+      container.innerHTML += card;
+    });
+  }
+
+  loadExpeditions();
 </script>
 
 
