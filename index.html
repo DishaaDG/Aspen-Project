@@ -179,6 +179,47 @@
       </div>
     </section>
 
+    <script>
+  // ✅ Replace this with your actual deployed Strapi URL
+  const apiUrl = "https://your-strapi-app.herokuapp.com/api/expeditions?populate=*";
+
+  async function loadExpeditions() {
+    try {
+      const res = await fetch(apiUrl);
+      if (!res.ok) throw new Error("Failed to fetch expeditions: " + res.status);
+      
+      const data = await res.json();
+      const container = document.getElementById("expedition-list");
+      container.innerHTML = "";
+
+      data.data.forEach(item => {
+        const expedition = item.attributes;
+        const imageUrl = expedition.image?.data?.attributes?.url
+          ? `https://your-strapi-app.herokuapp.com${expedition.image.data.attributes.url}`
+          : "https://via.placeholder.com/400x300";
+
+        const card = `
+          <div class="rounded-2xl overflow-hidden shadow-md hover-lift ease-soft glass">
+            <img src="${imageUrl}" alt="${expedition.title}" class="w-full h-44 object-cover">
+            <div class="p-5">
+              <h4 class="font-head text-lg">${expedition.title}</h4>
+              <p class="mt-2 text-sm text-gray-600">${expedition.location || ""}</p>
+              <p class="mt-2 text-sm text-gray-500">${expedition.description.substring(0, 120)}...</p>
+            </div>
+          </div>
+        `;
+        container.innerHTML += card;
+      });
+    } catch (err) {
+      console.error(err);
+      document.getElementById("expedition-list").innerHTML = `<p class="text-red-600">Failed to load expeditions.</p>`;
+    }
+  }
+
+  // Load expeditions on page load
+  loadExpeditions();
+</script>
+
 <!-- ========== CREDIBILITY / SOCIAL PROOF ========== -->
 <!-- ========== CREDIBILITY / SOCIAL PROOF (Text Only Version) ========== -->
 <section id="credibility" class="relative py-20 overflow-hidden bg-gradient-to-b from-[var(--off-white)] to-[var(--warm-sand)]">
@@ -651,46 +692,7 @@ document.querySelectorAll('#joinPrimary, #joinTop').forEach(btn => {
   }
 </script>
 
-<script>
-  // ✅ Replace this with your actual deployed Strapi URL
-  const apiUrl = "https://your-strapi-app.herokuapp.com/api/expeditions?populate=*";
 
-  async function loadExpeditions() {
-    try {
-      const res = await fetch(apiUrl);
-      if (!res.ok) throw new Error("Failed to fetch expeditions: " + res.status);
-      
-      const data = await res.json();
-      const container = document.getElementById("expedition-list");
-      container.innerHTML = "";
-
-      data.data.forEach(item => {
-        const expedition = item.attributes;
-        const imageUrl = expedition.image?.data?.attributes?.url
-          ? `https://your-strapi-app.herokuapp.com${expedition.image.data.attributes.url}`
-          : "https://via.placeholder.com/400x300";
-
-        const card = `
-          <div class="rounded-2xl overflow-hidden shadow-md hover-lift ease-soft glass">
-            <img src="${imageUrl}" alt="${expedition.title}" class="w-full h-44 object-cover">
-            <div class="p-5">
-              <h4 class="font-head text-lg">${expedition.title}</h4>
-              <p class="mt-2 text-sm text-gray-600">${expedition.location || ""}</p>
-              <p class="mt-2 text-sm text-gray-500">${expedition.description.substring(0, 120)}...</p>
-            </div>
-          </div>
-        `;
-        container.innerHTML += card;
-      });
-    } catch (err) {
-      console.error(err);
-      document.getElementById("expedition-list").innerHTML = `<p class="text-red-600">Failed to load expeditions.</p>`;
-    }
-  }
-
-  // Load expeditions on page load
-  loadExpeditions();
-</script>
 
 
 </body>
