@@ -186,9 +186,7 @@ async function loadExpeditions() {
 
   try {
     const res = await fetch(apiUrl);
-    if (!res.ok) {
-      throw new Error(`HTTP error! status: ${res.status}`);
-    }
+    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
     const json = await res.json();
     container.innerHTML = "";
@@ -199,29 +197,31 @@ async function loadExpeditions() {
     }
 
     json.data.forEach(item => {
-      const expedition = item.attributes;
+      const expedition = item.attributes || {};
 
-      // Check if image exists safely
-      let imageUrl = "https://via.placeholder.com/400x300"; // default image
-      if (
-        expedition.image &&
-        expedition.image.data &&
-        expedition.image.data.attributes &&
-        expedition.image.data.attributes.url
-      ) {
-        const url = expedition.image.data.attributes.url;
+      // Safe image fallback
+      let imageUrl = "https://via.placeholder.com/400x300";
+      const imageData = expedition?.image?.data;
+      if (imageData && imageData.attributes && imageData.attributes.url) {
+        const url = imageData.attributes.url;
         imageUrl = url.startsWith("http")
           ? url
           : `https://authentic-activity-92e94f43c6.strapiapp.com${url}`;
       }
 
+      const title = expedition.title || "Untitled Expedition";
+      const location = expedition.location || "Location not available";
+      const description = expedition.description
+        ? expedition.description.substring(0, 120) + "..."
+        : "No description available.";
+
       const card = `
         <div class="bg-white shadow-lg rounded-2xl overflow-hidden hover:scale-105 transform transition">
-          <img src="${imageUrl}" alt="${expedition.title || 'Expedition'}" class="w-full h-56 object-cover">
+          <img src="${imageUrl}" alt="${title}" class="w-full h-56 object-cover">
           <div class="p-4">
-            <h3 class="text-xl font-semibold mb-2">${expedition.title || 'Untitled Expedition'}</h3>
-            <p class="text-gray-600 mb-2">${expedition.location || 'Location not available'}</p>
-            <p class="text-gray-500">${expedition.description ? expedition.description.substring(0, 120) + '...' : 'No description available.'}</p>
+            <h3 class="text-xl font-semibold mb-2">${title}</h3>
+            <p class="text-gray-600 mb-2">${location}</p>
+            <p class="text-gray-500">${description}</p>
           </div>
         </div>
       `;
@@ -235,6 +235,7 @@ async function loadExpeditions() {
 
 loadExpeditions();
 </script>
+
 
 
 
