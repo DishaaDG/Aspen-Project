@@ -611,29 +611,7 @@ document.querySelectorAll('#joinPrimary, #joinTop').forEach(btn => {
 });
 
 
-        // Hero video control: pause on mobile to save data
-    const heroVideo = document.getElementById('heroVideo');
-    function handleHeroPlayback(){
-      const isMobile = window.matchMedia('(max-width: 640px)').matches;
-      if(!heroVideo) return;
-      if(isMobile){
-        heroVideo.pause();
-        heroVideo.style.objectPosition = 'center 40%';
-      } else {
-        heroVideo.play().catch(()=>{/* muted playback policy may block; it's fine */});
-      }
-    }
-    window.addEventListener('resize', handleHeroPlayback);
-    handleHeroPlayback();
-
-    // Basic gallery slider buttons
-    const gallery = document.getElementById('gallery');
-    document.getElementById('prevSlide').addEventListener('click', () => {
-      gallery.scrollBy({ left: -320, behavior: 'smooth' });
-    });
-    document.getElementById('nextSlide').addEventListener('click', () => {
-      gallery.scrollBy({ left: 320, behavior: 'smooth' });
-    });
+      
 
     // small fade-up animation on scroll for sections (IntersectionObserver)
     const io = new IntersectionObserver((entries)=> {
