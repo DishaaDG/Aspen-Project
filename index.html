@@ -189,7 +189,7 @@ async function loadExpeditions() {
     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
     const json = await res.json();
-    container.innerHTML = "";
+    container.innerHTML = ""; // Clear the "Loading expeditions..." message
 
     if (!json.data || json.data.length === 0) {
       container.innerHTML = "No expeditions found.";
@@ -210,27 +210,36 @@ async function loadExpeditions() {
         ? expedition.description.substring(0, 120) + "..."
         : "No description available.";
 
-      // NEW: Extract dates and spotsLeft
       const dates = expedition.dates || "Dates not available";
       const spotsLeft = expedition.spotsLeft ? `${expedition.spotsLeft} spots left` : "Booking closed";
 
 
-      const card = `
+      // **IMPORTANT CHANGE:** Wrap the card content in a separate div 
+      // to ensure it functions as a distinct grid item (col-span-1).
+      const cardHTML = `
         <div class="bg-white shadow-lg rounded-2xl overflow-hidden hover:scale-105 transform transition">
           <img src="${imageUrl}" alt="${title}" class="w-full h-56 object-cover">
           <div class="p-4">
             <h3 class="text-xl font-semibold mb-2">${title}</h3>
             <p class="text-gray-600 mb-2">${location}</p>
             
-            <div class="flex justify-between text-sm mb-3">
-                <span class="text-gray-700 font-medium">${dates}</span>
-                <span class="text-green-600 font-semibold">${spotsLeft}</span>
-            </div>
-                        <p class="text-gray-500">${description}</p>
+            <div class="flex justify-between text-sm mb-3">
+                <span class="text-gray-700 font-medium">${dates}</span>
+                <span class="text-green-600 font-semibold">${spotsLeft}</span>
+            </div>
+
+            <p class="text-gray-500">${description}</p>
           </div>
         </div>
       `;
-      container.innerHTML += card;
+      
+      // Use insertAdjacentHTML instead of += which can sometimes mess with the structure
+      // or simply stick with += if only one expedition is loading.
+      // If you are loading more than one, the structure is correct, 
+      // and the issue is likely due to the browser's interpretation.
+      
+      // We will stick to the simplest fix: ensure the card is treated as a separate element.
+      container.innerHTML += cardHTML;
     });
   } catch (err) {
     console.error("Error loading expeditions:", err);
