@@ -344,47 +344,72 @@ loadExpeditions();
 </section>
 
 <!-- ========== UPCOMING DRIVES ========== -->
-<!-- ========== UPCOMING DRIVES ========== -->
 <section id="upcoming" class="bg-warm-sand py-16">
   <div class="max-w-6xl mx-auto px-6">
     <h3 class="text-4xl font-bold text-center text-[var(--terracotta)] mb-12">Upcoming Drives</h3>
 
-    <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-      <!-- Card 1 -->
-      <div class="bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 p-6">
-        <h4 class="text-xl font-semibold text-gray-800 mb-2">Himalayan Highways</h4>
-        <p class="text-gray-500 mb-2"><strong>Location:</strong> India</p>
-        <p class="text-gray-500 mb-2"><strong>Dates:</strong> Apr 10–20, 2025</p>
-        <p class="text-gray-500 mb-4"><strong>Spots Left:</strong> 5 seats</p>
-        <div class="text-center">
-          <a href="#contact" class="inline-block px-6 py-2 bg-[var(--terracotta)] text-white rounded-lg font-medium hover:bg-[var(--terracotta-dark)] transition-colors">Join</a>
-        </div>
-      </div>
-
-      <!-- Card 2 -->
-      <div class="bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 p-6">
-        <h4 class="text-xl font-semibold text-gray-800 mb-2">Sahara & Southern Morocco</h4>
-        <p class="text-gray-500 mb-2"><strong>Location:</strong> Morocco</p>
-        <p class="text-gray-500 mb-2"><strong>Dates:</strong> May 15–25, 2025</p>
-        <p class="text-gray-500 mb-4"><strong>Spots Left:</strong> 8 seats</p>
-        <div class="text-center">
-          <a href="#contact" class="inline-block px-6 py-2 bg-[var(--terracotta)] text-white rounded-lg font-medium hover:bg-[var(--terracotta-dark)] transition-colors">Join</a>
-        </div>
-      </div>
-
-      <!-- Card 3 -->
-      <div class="bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 p-6">
-        <h4 class="text-xl font-semibold text-gray-800 mb-2">Patagonia Coastal Drives</h4>
-        <p class="text-gray-500 mb-2"><strong>Location:</strong> Chile</p>
-        <p class="text-gray-500 mb-2"><strong>Dates:</strong> June 2–12, 2025</p>
-        <p class="text-gray-500 mb-4"><strong>Spots Left:</strong> 3 seats</p>
-        <div class="text-center">
-          <a href="#contact" class="inline-block px-6 py-2 bg-[var(--terracotta)] text-white rounded-lg font-medium hover:bg-[var(--terracotta-dark)] transition-colors">Join</a>
-        </div>
-      </div>
+    <div id="upcoming-drives-list" class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+      Loading upcoming drives...
     </div>
   </div>
 </section>
+
+<script>
+// NOTE: REPLACE THIS URL WITH YOUR ACTUAL STRAPI BASE URL
+const upcomingDrivesApiUrl = "https://authentic-activity-92e94f43c6.strapiapp.com/api/upcoming-drives?populate=*";
+
+async function loadUpcomingDrives() {
+    const container = document.getElementById("upcoming-drives-list");
+    if (!container) return; 
+    
+    container.innerHTML = "Loading upcoming drives...";
+
+    try {
+        const res = await fetch(upcomingDrivesApiUrl);
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
+        const json = await res.json();
+        container.innerHTML = ""; // Clear "Loading..."
+
+        if (!json.data || json.data.length === 0) {
+            container.innerHTML = "No upcoming drives scheduled.";
+            return;
+        }
+
+        json.data.forEach(item => {
+            // Use item.attributes for Strapi v4 data access
+            const drive = item.attributes || {}; 
+            
+            // Map your Strapi fields to variables
+            const title = drive.Title || "Untitled Drive";
+            const location = drive.Location || "Location not available";
+            const dates = drive.Dates || "Dates not available";
+            const spotsLeft = drive.SpotsLeft ? `${drive.SpotsLeft} seats` : "Booking closed";
+
+
+            // Use your exact card structure with dynamic data injection
+            const card = `
+                <div class="bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 p-6">
+                    <h4 class="text-xl font-semibold text-gray-800 mb-2">${title}</h4>
+                    <p class="text-gray-500 mb-2"><strong>Location:</strong> ${location}</p>
+                    <p class="text-gray-500 mb-2"><strong>Dates:</strong> ${dates}</p>
+                    <p class="text-gray-500 mb-4"><strong>Spots Left:</strong> ${spotsLeft}</p>
+                    <div class="text-center">
+                        <a href="#contact" class="inline-block px-6 py-2 bg-[var(--terracotta)] text-white rounded-lg font-medium hover:bg-[var(--terracotta-dark)] transition-colors">Join</a>
+                    </div>
+                </div>
+            `;
+            container.innerHTML += card;
+        });
+    } catch (err) {
+        console.error("Error loading upcoming drives:", err);
+        container.innerHTML = "Failed to load drives.";
+    }
+}
+
+// Ensure the function runs when the page loads
+loadUpcomingDrives(); 
+</script>
 
  <!-- ========== GALLERY / TESTIMONIALS SLIDER ========== -->
     <!-- GALLERY (SWIPER) -->
