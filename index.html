@@ -54,19 +54,21 @@
     @media (min-width: 1024px){
       .hero-title { font-size: clamp(2rem, 3.8vw, 4rem); }
     }
-    /* 1. CONTAINER: Applies Flexbox to arrange cards horizontally */
-    .expeditions-grid {
-        display: flex; 
-        gap: 30px; /* Space between the cards */
-        flex-wrap: wrap; /* Important for responsiveness */
-    }
+   /* Container: This defines the 3-column grid */
+   .expeditions-grid {
+       /* Use CSS Grid for perfect 3-column alignment */
+       display: grid; 
+       /* Creates 3 equal columns with a 30px gap */
+       grid-template-columns: repeat(3, 1fr); 
+       gap: 30px; 
+   }
 
-    /* 2. CARDS: Makes each card take up one-third of the row */
-    .expedition-item {
-        /* Calculate width: 33.33% minus space for the gap */
-        width: calc(33.33% - 20px); 
-        box-sizing: border-box; 
-    }
+   /* Individual Card: Ensures the width calculation is correct for the grid */
+   .expedition-item {
+       /* Ensures padding/border is included in the size */
+       box-sizing: border-box; 
+       /* The grid handles the width, so no calc() needed */
+   }
   </style>
 </head>
 <body class="bg-off-white text-charcoal font-body">
