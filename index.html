@@ -200,7 +200,7 @@ async function loadExpeditions() {
       const expedition = item.attributes || {};
 
       // Safe image fallback
-      let imageUrl = "https://via.placeholder.com/400x300";
+      let imageUrl = "https://placehold.co/400x300";
       const imageData = expedition?.image?.data;
       if (imageData && imageData.attributes && imageData.attributes.url) {
         const url = imageData.attributes.url;
