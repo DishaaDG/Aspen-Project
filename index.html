@@ -181,56 +181,54 @@
 const apiUrl = "https://authentic-activity-92e94f43c6.strapiapp.com/api/expeditions?populate=*";
 
 async function loadExpeditions() {
-  const container = document.getElementById("expedition-list");
-  container.innerHTML = "Loading expeditions...";
+  const container = document.getElementById("expedition-list");
+  container.innerHTML = "Loading expeditions...";
 
-  try {
-    const res = await fetch(apiUrl);
-    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+  try {
+    const res = await fetch(apiUrl);
+    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
-    const json = await res.json();
-    container.innerHTML = "";
+    const json = await res.json();
+    container.innerHTML = "";
 
-    if (!json.data || json.data.length === 0) {
-      container.innerHTML = "No expeditions found.";
-      return;
-    }
+    if (!json.data || json.data.length === 0) {
+      container.innerHTML = "No expeditions found.";
+      return;
+    }
 
-    json.data.forEach(item => {
-      const expedition = item.attributes || {};
+    json.data.forEach(item => {
+      // FIX: Access the item directly, as your JSON does not use the 'attributes' wrapper
+      const expedition = item || {}; 
 
-      // Safe image fallback
-      let imageUrl = "https://placehold.co/400x300";
-      const imageData = expedition?.image?.data;
-      if (imageData && imageData.attributes && imageData.attributes.url) {
-        const url = imageData.attributes.url;
-        imageUrl = url.startsWith("http")
-          ? url
-          : `https://authentic-activity-92e94f43c6.strapiapp.com${url}`;
-      }
+      // FIX: Use reliable placeholder and access the image URL based on your JSON structure
+      let imageUrl = "https://placehold.co/400x300";
+      if (expedition.image && expedition.image.url) { 
+        imageUrl = expedition.image.url;
+      }
 
-      const title = expedition.title || "Untitled Expedition";
-      const location = expedition.location || "Location not available";
-      const description = expedition.description
-        ? expedition.description.substring(0, 120) + "..."
-        : "No description available.";
+      // FIX: Use the uppercase keys found in your Strapi data (Title, Location)
+      const title = expedition.Title || "Untitled Expedition";
+      const location = expedition.Location || "Location not available";
+      const description = expedition.description 
+        ? expedition.description.substring(0, 120) + "..."
+        : "No description available.";
 
-      const card = `
-        <div class="bg-white shadow-lg rounded-2xl overflow-hidden hover:scale-105 transform transition">
-          <img src="${imageUrl}" alt="${title}" class="w-full h-56 object-cover">
-          <div class="p-4">
-            <h3 class="text-xl font-semibold mb-2">${title}</h3>
-            <p class="text-gray-600 mb-2">${location}</p>
-            <p class="text-gray-500">${description}</p>
-          </div>
-        </div>
-      `;
-      container.innerHTML += card;
-    });
-  } catch (err) {
-    console.error("Error loading expeditions:", err);
-    container.innerHTML = "Failed to load expeditions...";
-  }
+      const card = `
+        <div class="bg-white shadow-lg rounded-2xl overflow-hidden hover:scale-105 transform transition">
+          <img src="${imageUrl}" alt="${title}" class="w-full h-56 object-cover">
+          <div class="p-4">
+            <h3 class="text-xl font-semibold mb-2">${title}</h3>
+            <p class="text-gray-600 mb-2">${location}</p>
+            <p class="text-gray-500">${description}</p>
+          </div>
+        </div>
+      `;
+      container.innerHTML += card;
+    });
+  } catch (err) {
+    console.error("Error loading expeditions:", err);
+    container.innerHTML = "Failed to load expeditions...";
+  }
 }
 
 loadExpeditions();
