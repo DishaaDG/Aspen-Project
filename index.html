@@ -514,26 +514,63 @@ loadUpcomingDrives();
 <section id="faq" class="bg-white py-16">
   <div class="max-w-5xl mx-auto px-6">
     <h3 class="font-head text-3xl text-[var(--terracotta)] text-center mb-8">Frequently Asked Questions</h3>
-    <div class="space-y-4">
-      <details class="bg-off-white p-5 rounded-lg shadow-sm">
-        <summary class="font-semibold cursor-pointer text-lg">Do I need my own car for these expeditions?</summary>
-        <p class="mt-2 text-gray-600 text-sm">No, ASPEN provides fully-prepared vehicles as part of your expedition package, including support and logistics.</p>
-      </details>
-      <details class="bg-off-white p-5 rounded-lg shadow-sm">
-        <summary class="font-semibold cursor-pointer text-lg">Are these drives safe for solo travellers or women?</summary>
-        <p class="mt-2 text-gray-600 text-sm">Absolutely. Safety and inclusivity are our top priorities — our women-led drives are designed to empower and inspire.</p>
-      </details>
-      <details class="bg-off-white p-5 rounded-lg shadow-sm">
-        <summary class="font-semibold cursor-pointer text-lg">How do I book or join a drive?</summary>
-        <p class="mt-2 text-gray-600 text-sm">Simply fill out the contact form or click “Join a Drive” — our team will contact you with trip details and next steps.</p>
-      </details>
-      <details class="bg-off-white p-5 rounded-lg shadow-sm">
-        <summary class="font-semibold cursor-pointer text-lg">Can I customize my expedition?</summary>
-        <p class="mt-2 text-gray-600 text-sm">Yes. ASPEN also offers bespoke self-drive expeditions tailored to your preferences, pace, and region of choice.</p>
-      </details>
+    
+    <div id="faq-list" class="space-y-4">
+      Loading FAQs...
     </div>
   </div>
 </section>
+
+<script>
+// CONFIRMED API ID: 'faqs'
+// NOTE: REPLACE THIS URL WITH YOUR ACTUAL STRAPI BASE URL
+const faqApiUrl = "https://authentic-activity-92e94f43c6.strapiapp.com/api/faqs";
+
+async function loadFAQs() {
+    const container = document.getElementById("faq-list");
+    if (!container) return; 
+    
+    container.innerHTML = "Loading FAQs...";
+
+    try {
+        const res = await fetch(faqApiUrl);
+        // The fetch will fail here if permissions aren't set or the server is down
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
+        const json = await res.json();
+        container.innerHTML = ""; // Clear "Loading..."
+
+        if (!json.data || json.data.length === 0) {
+            container.innerHTML = "No FAQs available at the moment.";
+            return;
+        }
+
+        json.data.forEach(item => {
+            // Use item.attributes for Strapi v4 data access
+            const faq = item.attributes || {}; 
+            
+            // Map to your Strapi fields (based on the content manager screenshot, you are using 'Question' and 'Answer')
+            const question = faq.Question || "Question not found";
+            const answer = faq.Answer || "Answer not found";
+
+            // Use your exact HTML structure (<details><summary>...</summary><p>...</p></details>)
+            const faqItem = `
+                <details class="bg-off-white p-5 rounded-lg shadow-sm">
+                    <summary class="font-semibold cursor-pointer text-lg">${question}</summary>
+                    <p class="mt-2 text-gray-600 text-sm">${answer}</p>
+                </details>
+            `;
+            container.innerHTML += faqItem;
+        });
+    } catch (err) {
+        console.error("Error loading FAQs:", err);
+        container.innerHTML = "Failed to load FAQs. (Check permissions and API endpoint)";
+    }
+}
+
+// Ensure the function runs when the page loads
+loadFAQs(); 
+</script>
 
 
 
