@@ -527,68 +527,48 @@ loadGallery();
 </section>
 
 <script>
-  const diariesApiUrl = "https://authentic-activity-92e94f43c6.strapiapp.com/api/aspen-diaries?populate=*";
+  
+const aspenApi =
+  "https://authentic-activity-92e94f43c6.strapiapp.com/api/aspen-diaries?populate=*";
 
-  async function loadAspenDiaries() {
-    const container = document.getElementById("aspen-diaries-list");
-    container.innerHTML = "Loading diaries...";
+async function loadAspenDiaries() {
+  try {
+    const response = await fetch(aspenApi);
+    const data = await response.json();
 
-    try {
-      const res = await fetch(diariesApiUrl);
+    const wrapper = document.getElementById("aspen-wrapper");
+    wrapper.innerHTML = "";
 
-      if (!res.ok)
-        throw new Error(`HTTP error! Status: ${res.status}`);
+    data.data.forEach(item => {
+      let imageUrl = "https://placehold.co/400x300";
 
-      const json = await res.json();
-      container.innerHTML = "";
-
-      if (!json.data || json.data.length === 0) {
-        container.innerHTML = "No diaries available.";
-        return;
+      // ✔ Correct handling for SINGLE IMAGE
+      if (item.Image && item.Image.url) {
+        imageUrl = item.Image.url.startsWith("http")
+          ? item.Image.url
+          : "https://authentic-activity-92e94f43c6.media.strapiapp.com" + item.Image.url;
       }
 
-      json.data.forEach(item => {
-        const diary = item.attributes || {};
+      wrapper.innerHTML += `
+        <article class="rounded-lg overflow-hidden shadow-sm hover-lift">
+          <img src="${imageUrl}" alt="diary" class="w-full h-44 object-cover">
+          <div class="p-4">
+            <h4 class="font-head">${item.Title}</h4>
+            <p class="mt-2 text-sm text-gray-600">${item.Description}</p>
+            <div class="mt-4 text-xs text-gray-500">${item.Date_Time}</div>
+          </div>
+        </article>
+      `;
+    });
 
-        const title = diary.Title || "Untitled Diary";
-        const desc = diary.Description || "No description available.";
-        const date = diary.Date_Time
-          ? new Date(diary.Date_Time).toLocaleDateString("en-IN", {
-              year: "numeric",
-              month: "long",
-              day: "numeric"
-            })
-          : "Date not available";
-
-        // Get image
-        const imageUrl =
-          diary.Image?.data?.attributes?.url
-            ? diary.Image.data.attributes.url
-            : "https://via.placeholder.com/400x250?text=No+Image";
-
-        const card = `
-          <article class="rounded-lg overflow-hidden shadow-sm hover-lift">
-            <img src="${imageUrl}" class="w-full h-44 object-cover" alt="${title}">
-            <div class="p-4">
-              <h4 class="font-head">${title}</h4>
-              <p class="mt-2 text-sm text-gray-600">${desc}</p>
-              <div class="mt-4 text-xs text-gray-500">${date}</div>
-            </div>
-          </article>
-        `;
-
-        container.innerHTML += card;
-      });
-
-    } catch (err) {
-      console.error("Error loading diaries:", err);
-      container.innerHTML = "Failed to load diaries.";
-    }
+  } catch (err) {
+    console.error("Aspen load error:", err);
   }
+}
 
-  loadAspenDiaries();
+loadAspenDiaries();
 </script>
-
+    
 
    
 <!-- ========== FAQ SECTION ========== -->
