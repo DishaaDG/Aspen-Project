@@ -510,19 +510,18 @@ loadGallery();
         </div>
       </div>
     </section>
+    
 
     <!-- ========== ASPEN DIARIES ========== -->
-    <section id="journal" class="bg-off-white py-16">
+<section id="journal" class="bg-off-white py-16">
   <div class="container mx-auto px-6">
     <div class="flex items-center justify-between mb-8">
       <h3 class="font-head text-2xl">ASPEN Diaries</h3>
       <a href="#" class="text-sm text-gray-600">See all →</a>
     </div>
 
-    <!-- Dynamic list will load here -->
     <div id="aspen-diaries-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      <!-- Cards inserted dynamically -->
-    </div>
+      </div>
   </div>
 </section>
 
@@ -537,19 +536,48 @@ document.addEventListener("DOMContentLoaded", () => {
       const response = await fetch(aspenApi);
       const data = await response.json();
 
-      const wrapper = document.getElementById("aspen-wrapper");
+      // **FIX:** Changed "aspen-wrapper" to the correct ID "aspen-diaries-list"
+      const wrapper = document.getElementById("aspen-diaries-list");
 
+      // Check to ensure the wrapper element was found
+      if (!wrapper) {
+        console.error("The element with ID 'aspen-diaries-list' was not found in the DOM.");
+        return;
+      }
+      
+      // Clear previous content
       wrapper.innerHTML = "";
 
       data.data.forEach(item => {
         let imageUrl = "https://placehold.co/400x300";
+
+        // Extract image URL safely
+        if (item.attributes.Image && item.attributes.Image.data && item.attributes.Image.data.attributes.url) {
+            let imgUrl = item.attributes.Image.data.attributes.url;
+            imageUrl = imgUrl.startsWith("http")
+              ? imgUrl
+              : "https://authentic-activity-92e94f43c6.media.strapiapp.com" + imgUrl;
+        } 
+        // NOTE: The provided JSON data structure is slightly different (no 'attributes' wrap)
+        // This is a common difference between Strapi's API response structure depending on version.
+        // Assuming the JSON you provided is a snippet of the *actual* data structure
+        // that's causing the current image fetching issues (if any) and adjusting based on the JS logic:
+
+        // If your JSON structure is flat (as provided in the text snippet):
+        // if (item.Image && item.Image.url) {
+        //   imageUrl = item.Image.url.startsWith("http")
+        //     ? item.Image.url
+        //     : "https://authentic-activity-92e94f43c6.media.strapiapp.com" + item.Image.url;
+        // }
+        // We'll stick to the flat structure implied by your original JS, though a typical Strapi response is nested.
 
         if (item.Image && item.Image.url) {
           imageUrl = item.Image.url.startsWith("http")
             ? item.Image.url
             : "https://authentic-activity-92e94f43c6.media.strapiapp.com" + item.Image.url;
         }
-
+        
+        // Ensure you are using the correct properties (e.g., 'Title' and 'Description' from the data structure)
         wrapper.innerHTML += `
           <article class="rounded-lg overflow-hidden shadow-sm hover-lift">
             <img src="${imageUrl}" class="w-full h-44 object-cover">
