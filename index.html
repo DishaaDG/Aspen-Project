@@ -547,65 +547,65 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const aspenApi =
     "https://authentic-activity-92e94f43c6.strapiapp.com/api/aspen-diaries?populate=*";
+  const strapiBaseUrl = "https://authentic-activity-92e94f43c6.media.strapiapp.com";
 
- async function loadAspenDiaries() {
-  try {
-    const response = await fetch(aspenApi);
-    const data = await response.json();
+  async function loadAspenDiaries() {
+    try {
+      const response = await fetch(aspenApi);
+      const data = await response.json();
 
-    const wrapper = document.getElementById("aspen-diaries-list");
+      const wrapper = document.getElementById("aspen-diaries-list");
 
-    if (!wrapper) {
-      console.error("The element with ID 'aspen-diaries-list' was not found.");
-      return;
-    }
-    
-    wrapper.innerHTML = "";
-
-    data.data.forEach(item => {
-      // **NEW FIX:** Check for 'attributes' and assign a fallback object
-      const attrs = item.attributes || item; // Use attributes if it exists, otherwise use item itself
-      
-      let imageUrl = "https://placehold.co/400x300";
-
-      // Access properties from the 'attrs' object (either attributes or item)
-      // Note: For Strapi images, the URL is often nested further within 'data.attributes'.
-      
-      let imageObject = attrs.Image; // This should be the image object
-
-      // If the image object is a Strapi V4 relation, it's nested: Image.data.attributes.url
-      if (imageObject && imageObject.data && imageObject.data.attributes && imageObject.data.attributes.url) {
-          let imgUrl = imageObject.data.attributes.url;
-          imageUrl = imgUrl.startsWith("http")
-            ? imgUrl
-            : "https://authentic-activity-92e94f43c6.media.strapiapp.com" + imgUrl;
-      } 
-      // Fallback for flat structure, assuming the initial JSON snippet you provided was correct
-      else if (attrs.Image && attrs.Image.url) {
-         let imgUrl = attrs.Image.url;
-          imageUrl = imgUrl.startsWith("http")
-            ? imgUrl
-            : "https://authentic-activity-92e94f43c6.media.strapiapp.com" + imgUrl;
+      if (!wrapper) {
+        console.error("The element with ID 'aspen-diaries-list' was not found.");
+        return;
       }
       
-      // Use the 'attrs' object for all fields
-      wrapper.innerHTML += `
-        <article class="rounded-lg overflow-hidden shadow-sm hover-lift">
-          <img src="${imageUrl}" class="w-full h-44 object-cover">
-          <div class="p-4">
-            <h4 class="font-head">${attrs.Title}</h4>
-            <p class="mt-2 text-sm text-gray-600">${attrs.Description}</p>
-            <div class="mt-4 text-xs text-gray-500">${attrs.Date_Time}</div>
-          </div>
-        </article>
-      `;
-    });
+      wrapper.innerHTML = "";
 
-  } catch (err) {
-    console.error("Aspen load error:", err);
+      data.data.forEach(item => {
+        // Use 'attributes' if it exists, otherwise use the item itself (for the flatter structure)
+        const entry = item.attributes || item; 
+        
+        let imageUrl = "https://placehold.co/400x300";
+        let imageObject = entry.Image; 
+
+        // 1. Try to access the medium format for optimal loading speed
+        if (imageObject && imageObject.formats && imageObject.formats.medium && imageObject.formats.medium.url) {
+            let imgUrl = imageObject.formats.medium.url;
+            imageUrl = imgUrl.startsWith("http")
+              ? imgUrl
+              : strapiBaseUrl + imgUrl;
+        }
+        // 2. Fallback to the original URL
+        else if (imageObject && imageObject.url) {
+            let imgUrl = imageObject.url;
+            imageUrl = imgUrl.startsWith("http")
+              ? imgUrl
+              : strapiBaseUrl + imgUrl;
+        }
+        
+        // Use the 'entry' object for all fields (Title, Description, etc.)
+        wrapper.innerHTML += `
+          <article class="rounded-lg overflow-hidden shadow-sm hover-lift">
+            <img src="${imageUrl}" alt="${entry.Title || 'Diary Image'}" class="w-full h-44 object-cover">
+            <div class="p-4">
+              <h4 class="font-head">${entry.Title}</h4>
+              <p class="mt-2 text-sm text-gray-600">${entry.Description}</p>
+              <div class="mt-4 text-xs text-gray-500">${entry.Date_Time}</div>
+            </div>
+          </article>
+        `;
+      });
+
+    } catch (err) {
+      console.error("Aspen load error:", err);
+    }
   }
-}
-// ... (rest of the script)
+
+  loadAspenDiaries();
+
+});
 </script>
 
 
