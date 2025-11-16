@@ -412,7 +412,8 @@ loadUpcomingDrives();
 
     
 
- <section id="gallery" class="py-16 bg-off-white">
+ <!-- ========== GALLERY / CINEMATIC SLIDER ========== -->
+<section id="gallery" class="py-16 bg-off-white">
   <div class="max-w-7xl mx-auto px-6">
     <div class="text-center mb-8" data-aos="fade-up">
       <h3 class="font-head text-3xl text-[var(--terracotta)]">Gallery</h3>
@@ -421,8 +422,8 @@ loadUpcomingDrives();
 
     <!-- Swiper Gallery -->
     <div class="swiper mySwiperGallery">
-      <div id="gallery-wrapper" class="swiper-wrapper">
-        <!-- Dynamic slides will load here -->
+      <div class="swiper-wrapper" id="gallery-wrapper">
+        <!-- JS will insert slides here -->
       </div>
 
       <!-- Pagination + Arrows -->
@@ -434,43 +435,58 @@ loadUpcomingDrives();
 </section>
 
 <script>
-const galleryApiUrl = "https://authentic-activity-92e94f43c6.strapiapp.com/api/galleries?populate=*";
+  const galleryApi = "https://authentic-activity-92e94f43c6.strapiapp.com/api/galleries?populate=*";
 
-async function loadGallery() {
-    const container = document.querySelector(".mySwiperGallery .swiper-wrapper");
-
+  async function loadGallery() {
     try {
-        const res = await fetch(galleryApiUrl);
-        const json = await res.json();
+      const response = await fetch(galleryApi);
+      const data = await response.json();
 
-        container.innerHTML = "";
+      const wrapper = document.getElementById("gallery-wrapper");
 
-        json.data.forEach(item => {
-            const g = item.attributes;
+      wrapper.innerHTML = ""; // clear old
 
-            // SINGLE IMAGE CASE
-            const imgData = g.Image?.data;
-            const imgUrl = imgData
-                ? (imgData.attributes.url.startsWith("http")
-                    ? imgData.attributes.url
-                    : "https://authentic-activity-92e94f43c6.strapiapp.com" + imgData.attributes.url)
-                : "https://placehold.co/1200x700?text=No+Image";
+      data.data.forEach(item => {
+        let imageUrl = "https://placehold.co/600x400";
 
-            const slide = `
-                <div class="swiper-slide">
-                    <img src="${imgUrl}" class="w-full h-80 object-cover rounded-xl shadow-md">
-                </div>
-            `;
+        // Your Strapi structure: Image is always an array
+        if (item.Image && item.Image.length > 0 && item.Image[0].url) {
+          imageUrl = item.Image[0].url.startsWith("http")
+            ? item.Image[0].url
+            : "https://authentic-activity-92e94f43c6.strapiapp.com" + item.Image[0].url;
+        }
 
-            container.innerHTML += slide;
-        });
+        wrapper.innerHTML += `
+          <div class="swiper-slide">
+            <img src="${imageUrl}" class="w-full h-80 object-cover rounded-xl shadow-md" />
+          </div>
+        `;
+      });
+
+      // Reinitialize Swiper after loading dynamic slides
+      new Swiper(".mySwiperGallery", {
+        slidesPerView: 1.2,
+        spaceBetween: 20,
+        loop: true,
+        pagination: { el: ".swiper-pagination", clickable: true },
+        navigation: {
+          nextEl: ".swiper-button-next",
+          prevEl: ".swiper-button-prev",
+        },
+        breakpoints: {
+          640: { slidesPerView: 2 },
+          1024: { slidesPerView: 3 },
+        }
+      });
+
     } catch (error) {
-        console.error("Gallery load error:", error);
+      console.error("Error loading gallery:", error);
     }
-}
+  }
 
-loadGallery();
+  loadGallery();
 </script>
+
 
 
 
