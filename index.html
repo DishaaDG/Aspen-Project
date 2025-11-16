@@ -355,7 +355,6 @@ loadExpeditions();
 </section>
 
 <script>
-  
 const upcomingDrivesApiUrl = "https://authentic-activity-92e94f43c6.strapiapp.com/api/upcoming-drives?populate=*";
 
 async function loadUpcomingDrives() {
@@ -365,16 +364,13 @@ async function loadUpcomingDrives() {
     container.innerHTML = "Loading upcoming drives...";
 
     try {
-        const res = await fetch(upcomingDrivesApiUrl, {
-            method: 'GET',
-            headers: {
-                // FIX: Send token to authorize the request (bypasses 403)
-                'Authorization': `Bearer ${API_TOKEN}`, 
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        // Fetch is now simple, matching the working loadExpeditions structure:
+        const res = await fetch(upcomingDrivesApiUrl); 
+        
+        if (!res.ok) {
+            // This will catch the 403 or 401 error if the server is still blocking access
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
 
         const json = await res.json();
         
@@ -393,7 +389,11 @@ async function loadUpcomingDrives() {
             const title = drive.Title || "Untitled Drive";
             const location = drive.Location || "Location not available";
             const dates = drive.Dates || "Dates not available";
-            const spotsLeft = drive.SpotsLeft ? `${drive.SpotsLeft} seats` : "Booking closed";
+            
+            // Safely check for SpotsLeft
+            const spotsLeft = (drive.SpotsLeft !== undefined && drive.SpotsLeft !== null && drive.SpotsLeft > 0) 
+                ? `${drive.SpotsLeft} seats` 
+                : "Booking closed"; 
 
             // Use your exact card structure with dynamic data injection
             const card = `
