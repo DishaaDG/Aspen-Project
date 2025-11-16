@@ -412,10 +412,7 @@ loadUpcomingDrives();
 
     
 
- <!-- ========== GALLERY / TESTIMONIALS SLIDER ========== -->
-    <!-- GALLERY (SWIPER) -->
-<!-- ========== GALLERY / CINEMATIC SLIDER ========== -->
-<section id="gallery" class="py-16 bg-off-white">
+ <section id="gallery" class="py-16 bg-off-white">
   <div class="max-w-7xl mx-auto px-6">
     <div class="text-center mb-8" data-aos="fade-up">
       <h3 class="font-head text-3xl text-[var(--terracotta)]">Gallery</h3>
@@ -424,22 +421,8 @@ loadUpcomingDrives();
 
     <!-- Swiper Gallery -->
     <div class="swiper mySwiperGallery">
-      <div class="swiper-wrapper">
-        <div class="swiper-slide">
-          <img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=60" alt="gallery1" class="w-full h-80 object-cover rounded-xl shadow-md">
-        </div>
-        <div class="swiper-slide">
-          <img src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1600&q=60" alt="gallery2" class="w-full h-80 object-cover rounded-xl shadow-md">
-        </div>
-        <div class="swiper-slide">
-          <img src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1600&q=60" alt="gallery3" class="w-full h-80 object-cover rounded-xl shadow-md">
-        </div>
-        <div class="swiper-slide">
-          <img src="https://images.unsplash.com/photo-1470770903676-69b98201ea1c?auto=format&fit=crop&w=1600&q=60" alt="gallery4" class="w-full h-80 object-cover rounded-xl shadow-md">
-        </div>
-        <div class="swiper-slide">
-          <img src="https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=1600&q=60" alt="gallery5" class="w-full h-80 object-cover rounded-xl shadow-md">
-        </div>
+      <div id="gallery-wrapper" class="swiper-wrapper">
+        <!-- Dynamic slides will load here -->
       </div>
 
       <!-- Pagination + Arrows -->
@@ -449,6 +432,90 @@ loadUpcomingDrives();
     </div>
   </div>
 </section>
+
+<script>
+  const galleryApiUrl = "https://YOUR-STRAPI-DOMAIN/api/galleries?populate=Image";
+
+  async function loadGallery() {
+    const wrapper = document.getElementById("gallery-wrapper");
+    wrapper.innerHTML = "<div class='text-center w-full py-10'>Loading gallery...</div>";
+
+    try {
+      const res = await fetch(galleryApiUrl);
+
+      if (!res.ok)
+        throw new Error(`HTTP error! Status: ${res.status}`);
+
+      const json = await res.json();
+      wrapper.innerHTML = "";
+
+      if (!json.data || json.data.length === 0) {
+        wrapper.innerHTML = "<div class='text-center w-full py-10'>No images found.</div>";
+        return;
+      }
+
+      json.data.forEach(item => {
+        const gallery = item.attributes || {};
+
+        // ❤️ FIELD: Image (multiple)
+        const images = gallery.Image?.data || [];
+
+        // If no images at all
+        if (images.length === 0) {
+          wrapper.innerHTML += `
+            <div class="swiper-slide">
+              <img src="https://via.placeholder.com/1200x700?text=No+Image" class="w-full h-80 object-cover rounded-xl shadow-md">
+            </div>`;
+          return;
+        }
+
+        // Generate slides for each image
+        images.forEach(pic => {
+          const imgUrl = pic.attributes?.url
+            ? pic.attributes.url
+            : "https://via.placeholder.com/1200x700?text=No+Image";
+
+          const slide = `
+            <div class="swiper-slide">
+              <img src="${imgUrl}" class="w-full h-80 object-cover rounded-xl shadow-md">
+            </div>
+          `;
+
+          wrapper.innerHTML += slide;
+        });
+      });
+
+      // Re-init Swiper after dynamic content
+      setTimeout(() => {
+        new Swiper(".mySwiperGallery", {
+          slidesPerView: 1,
+          spaceBetween: 20,
+          loop: true,
+          autoplay: { delay: 2500 },
+          pagination: {
+            el: ".swiper-pagination",
+            clickable: true,
+          },
+          navigation: {
+            nextEl: ".swiper-button-next",
+            prevEl: ".swiper-button-prev",
+          },
+          breakpoints: {
+            768: { slidesPerView: 2 },
+            1024: { slidesPerView: 3 },
+          }
+        });
+      }, 300);
+
+    } catch (err) {
+      console.error("Error loading gallery:", err);
+      wrapper.innerHTML = "<div class='text-center w-full py-10'>Failed to load gallery.</div>";
+    }
+  }
+
+  loadGallery();
+</script>
+
 
 
     <!-- ========== WOMEN-LED / COMMUNITY ========== -->
@@ -471,44 +538,84 @@ loadUpcomingDrives();
       </div>
     </section>
 
-    <!-- ========== JOURNAL / STORIES ========== -->
+    <!-- ========== ASPEN DIARIES ========== -->
     <section id="journal" class="bg-off-white py-16">
-      <div class="container mx-auto px-6">
-        <div class="flex items-center justify-between mb-8">
-          <h3 class="font-head text-2xl">ASPEN Diaries</h3>
-          <a href="#" class="text-sm text-gray-600">See all →</a>
-        </div>
+  <div class="container mx-auto px-6">
+    <div class="flex items-center justify-between mb-8">
+      <h3 class="font-head text-2xl">ASPEN Diaries</h3>
+      <a href="#" class="text-sm text-gray-600">See all →</a>
+    </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <!-- Dynamic list will load here -->
+    <div id="aspen-diaries-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Cards inserted dynamically -->
+    </div>
+  </div>
+</section>
+
+<script>
+  const diariesApiUrl = "https://YOUR-STRAPI-DOMAIN/api/aspen-diaries?populate=Image";
+
+  async function loadAspenDiaries() {
+    const container = document.getElementById("aspen-diaries-list");
+    container.innerHTML = "Loading diaries...";
+
+    try {
+      const res = await fetch(diariesApiUrl);
+
+      if (!res.ok)
+        throw new Error(`HTTP error! Status: ${res.status}`);
+
+      const json = await res.json();
+      container.innerHTML = "";
+
+      if (!json.data || json.data.length === 0) {
+        container.innerHTML = "No diaries available.";
+        return;
+      }
+
+      json.data.forEach(item => {
+        const diary = item.attributes || {};
+
+        const title = diary.Title || "Untitled Diary";
+        const desc = diary.Description || "No description available.";
+        const date = diary.Date_Time
+          ? new Date(diary.Date_Time).toLocaleDateString("en-IN", {
+              year: "numeric",
+              month: "long",
+              day: "numeric"
+            })
+          : "Date not available";
+
+        // Get image
+        const imageUrl =
+          diary.Image?.data?.attributes?.url
+            ? diary.Image.data.attributes.url
+            : "https://via.placeholder.com/400x250?text=No+Image";
+
+        const card = `
           <article class="rounded-lg overflow-hidden shadow-sm hover-lift">
-            <img src="https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?q=80&w=1200&auto=format&fit=crop" alt="diary" class="w-full h-44 object-cover">
+            <img src="${imageUrl}" class="w-full h-44 object-cover" alt="${title}">
             <div class="p-4">
-              <h4 class="font-head">Across the Himalayan Passes</h4>
-              <p class="mt-2 text-sm text-gray-600">A personal story of sunrise camps and overnight tea stops along the ridge.</p>
-              <div class="mt-4 text-xs text-gray-500">June 2025 • 8 min read</div>
+              <h4 class="font-head">${title}</h4>
+              <p class="mt-2 text-sm text-gray-600">${desc}</p>
+              <div class="mt-4 text-xs text-gray-500">${date}</div>
             </div>
           </article>
+        `;
 
-          <article class="rounded-lg overflow-hidden shadow-sm hover-lift">
-            <img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1200&auto=format&fit=crop" alt="diary" class="w-full h-44 object-cover">
-            <div class="p-4">
-              <h4 class="font-head">Desert Nights in Morocco</h4>
-              <p class="mt-2 text-sm text-gray-600">Local music, lantern-lit camps and dune-swept routes — a photo diary.</p>
-              <div class="mt-4 text-xs text-gray-500">May 2025 • 6 min read</div>
-            </div>
-          </article>
+        container.innerHTML += card;
+      });
 
-          <article class="rounded-lg overflow-hidden shadow-sm hover-lift">
-            <img src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=1200&auto=format&fit=crop" alt="diary" class="w-full h-44 object-cover">
-            <div class="p-4">
-              <h4 class="font-head">Women Behind the Wheel</h4>
-              <p class="mt-2 text-sm text-gray-600">How women drivers are reshaping the landscape of self-drive travel.</p>
-              <div class="mt-4 text-xs text-gray-500">April 2025 • 7 min read</div>
-            </div>
-          </article>
-        </div>
-      </div>
-    </section>
+    } catch (err) {
+      console.error("Error loading diaries:", err);
+      container.innerHTML = "Failed to load diaries.";
+    }
+  }
+
+  loadAspenDiaries();
+</script>
+
 
    
 <!-- ========== FAQ SECTION ========== -->
@@ -527,7 +634,7 @@ loadUpcomingDrives();
 // NOTE: REPLACE THIS URL WITH YOUR ACTUAL STRAPI BASE URL
 const faqApiUrl = "https://authentic-activity-92e94f43c6.strapiapp.com/api/faqs?populate=*";
 
-async function loadFAQs() {
+async function loadFAQs() { 
     const container = document.getElementById("faq-list");
     if (!container) return; 
     
@@ -535,11 +642,10 @@ async function loadFAQs() {
 
     try {
         const res = await fetch(faqApiUrl);
-        // The fetch will fail here if permissions aren't set or the server is down
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
         const json = await res.json();
-        container.innerHTML = ""; // Clear "Loading..."
+        container.innerHTML = ""; 
 
         if (!json.data || json.data.length === 0) {
             container.innerHTML = "No FAQs available at the moment.";
@@ -547,14 +653,11 @@ async function loadFAQs() {
         }
 
         json.data.forEach(item => {
-            // Use item.attributes for Strapi v4 data access
-            const faq = item.attributes || {}; 
-            
-            // Map to your Strapi fields (based on the content manager screenshot, you are using 'Question' and 'Answer')
+            const faq = item || {};  // EXACT CODE1 STYLE
+
             const question = faq.Question || "Question not found";
             const answer = faq.Answer || "Answer not found";
 
-            // Use your exact HTML structure (<details><summary>...</summary><p>...</p></details>)
             const faqItem = `
                 <details class="bg-off-white p-5 rounded-lg shadow-sm">
                     <summary class="font-semibold cursor-pointer text-lg">${question}</summary>
@@ -563,14 +666,15 @@ async function loadFAQs() {
             `;
             container.innerHTML += faqItem;
         });
+
     } catch (err) {
         console.error("Error loading FAQs:", err);
-        container.innerHTML = "Failed to load FAQs. (Check permissions and API endpoint)";
+        container.innerHTML = "Failed to load FAQs.";
     }
 }
 
-// Ensure the function runs when the page loads
-loadFAQs(); 
+loadFAQs();
+
 </script>
 
 
