@@ -421,12 +421,17 @@ loadUpcomingDrives();
     </div>
 
     <!-- Swiper Gallery -->
+    <section id="gallery" class="py-16 bg-off-white">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="text-center mb-8" data-aos="fade-up">
+      <h3 class="font-head text-3xl text-[var(--terracotta)]">Gallery</h3>
+      <p class="mt-2 text-gray-600">Moments from our drives — real travellers, real landscapes.</p>
+    </div>
+
     <div class="swiper mySwiperGallery">
       <div class="swiper-wrapper" id="gallery-wrapper">
-        <!-- JS will insert slides here -->
-      </div>
+        </div>
 
-      <!-- Pagination + Arrows -->
       <div class="swiper-pagination mt-4"></div>
       <div class="swiper-button-prev !text-[var(--terracotta)]"></div>
       <div class="swiper-button-next !text-[var(--terracotta)]"></div>
@@ -435,56 +440,75 @@ loadUpcomingDrives();
 </section>
 
 <script>
-  const galleryApi = "https://authentic-activity-92e94f43c6.strapiapp.com/api/galleries?populate=*";
+document.addEventListener("DOMContentLoaded", () => {
+    // API endpoint and base URL for Strapi assets
+    const galleryApi = "https://authentic-activity-92e94f43c6.strapiapp.com/api/galleries?populate=*";
+    const strapiBaseUrl = "https://authentic-activity-92e94f43c6.media.strapiapp.com";
 
-  async function loadGallery() {
-  try {
-    const response = await fetch(galleryApi);
-    const data = await response.json();
+    async function loadGallery() {
+        try {
+            const response = await fetch(galleryApi);
+            const data = await response.json();
 
-    const wrapper = document.getElementById("gallery-wrapper");
-    wrapper.innerHTML = ""; // Clear previous items
+            const wrapper = document.getElementById("gallery-wrapper");
+            if (!wrapper) {
+                console.error("Gallery wrapper not found.");
+                return;
+            }
+            wrapper.innerHTML = ""; // Clear previous items
 
-    data.data.forEach(item => {
-      let imageUrl = "https://placehold.co/400x300";
+            data.data.forEach(item => {
+                // Safely access nested Strapi V4 image data (item.attributes.Image.data[0].attributes.url)
+                const imageArray = item.attributes?.Image?.data;
 
-      // SAFE CHECK (this never crashes)
-      if (item.Image && item.Image.length > 0 && item.Image[0].url) {
-        imageUrl = item.Image[0].url.startsWith("http")
-          ? item.Image[0].url
-          : "https://authentic-activity-92e94f43c6.media.strapiapp.com" + item.Image[0].url;
-      }
+                if (imageArray && Array.isArray(imageArray) && imageArray.length > 0) {
+                    const imageAttributes = imageArray[0].attributes;
+                    let imageUrl = imageAttributes?.url || "https://placehold.co/400x300";
 
-      wrapper.innerHTML += `
-        <div class="swiper-slide">
-          <img src="${imageUrl}" class="w-full h-80 object-cover rounded-xl shadow-md" />
-        </div>
-      `;
-    });
+                    // Construct full URL if it's a relative path
+                    if (!imageUrl.startsWith("http")) {
+                        imageUrl = strapiBaseUrl + imageUrl;
+                    }
+                    
+                    // Template with lazy loading enabled (data-src instead of src)
+                    wrapper.innerHTML += `
+                        <div class="swiper-slide">
+                          <img data-src="${imageUrl}" 
+                               alt="${imageAttributes?.name || 'Gallery image'}" 
+                               class="w-full h-80 object-cover rounded-xl shadow-md swiper-lazy" />
+                          <div class="swiper-lazy-preloader swiper-lazy-preloader-white"></div>
+                        </div>
+                    `;
+                }
+            });
 
-    // Reinitialize Swiper
-    new Swiper(".mySwiperGallery", {
-      slidesPerView: 1.2,
-      spaceBetween: 20,
-      loop: true,
-      pagination: { el: ".swiper-pagination", clickable: true },
-      navigation: {
-        nextEl: ".swiper-button-next",
-        prevEl: ".swiper-button-prev",
-      },
-      breakpoints: {
-        640: { slidesPerView: 2 },
-        1024: { slidesPerView: 3 },
-      }
-    });
+            // Reinitialize Swiper after all content is loaded
+            new Swiper(".mySwiperGallery", {
+                slidesPerView: 1.2,
+                spaceBetween: 20,
+                loop: true,
+                // Add lazy loading feature
+                lazy: {
+                    loadPrevNext: true, 
+                },
+                pagination: { el: ".swiper-pagination", clickable: true },
+                navigation: {
+                    nextEl: ".swiper-button-next",
+                    prevEl: ".swiper-button-prev",
+                },
+                breakpoints: {
+                    640: { slidesPerView: 2 },
+                    1024: { slidesPerView: 3 },
+                }
+            });
 
-  } catch (error) {
-    console.error("Gallery load error:", error);
-  }
-}
+        } catch (error) {
+            console.error("Gallery load error:", error);
+        }
+    }
 
-loadGallery();
-
+    loadGallery();
+});
 </script>
 
 
@@ -531,53 +555,64 @@ document.addEventListener("DOMContentLoaded", () => {
   const aspenApi =
     "https://authentic-activity-92e94f43c6.strapiapp.com/api/aspen-diaries?populate=*";
 
-  async function loadAspenDiaries() {
-    try {
-      const response = await fetch(aspenApi);
-      const data = await response.json();
+ async function loadAspenDiaries() {
+  try {
+    const response = await fetch(aspenApi);
+    const data = await response.json();
 
-      // **FIX APPLIED HERE:** The ID is corrected to "aspen-diaries-list"
-      const wrapper = document.getElementById("aspen-diaries-list");
+    const wrapper = document.getElementById("aspen-diaries-list");
 
-      // Guard clause to prevent the TypeError if element is missing
-      if (!wrapper) {
-        console.error("The element with ID 'aspen-diaries-list' was not found in the DOM.");
-        return;
+    if (!wrapper) {
+      console.error("The element with ID 'aspen-diaries-list' was not found.");
+      return;
+    }
+    
+    wrapper.innerHTML = "";
+
+    data.data.forEach(item => {
+      // **NEW FIX:** Check for 'attributes' and assign a fallback object
+      const attrs = item.attributes || item; // Use attributes if it exists, otherwise use item itself
+      
+      let imageUrl = "https://placehold.co/400x300";
+
+      // Access properties from the 'attrs' object (either attributes or item)
+      // Note: For Strapi images, the URL is often nested further within 'data.attributes'.
+      
+      let imageObject = attrs.Image; // This should be the image object
+
+      // If the image object is a Strapi V4 relation, it's nested: Image.data.attributes.url
+      if (imageObject && imageObject.data && imageObject.data.attributes && imageObject.data.attributes.url) {
+          let imgUrl = imageObject.data.attributes.url;
+          imageUrl = imgUrl.startsWith("http")
+            ? imgUrl
+            : "https://authentic-activity-92e94f43c6.media.strapiapp.com" + imgUrl;
+      } 
+      // Fallback for flat structure, assuming the initial JSON snippet you provided was correct
+      else if (attrs.Image && attrs.Image.url) {
+         let imgUrl = attrs.Image.url;
+          imageUrl = imgUrl.startsWith("http")
+            ? imgUrl
+            : "https://authentic-activity-92e94f43c6.media.strapiapp.com" + imgUrl;
       }
       
-      // Clear previous content
-      wrapper.innerHTML = "";
+      // Use the 'attrs' object for all fields
+      wrapper.innerHTML += `
+        <article class="rounded-lg overflow-hidden shadow-sm hover-lift">
+          <img src="${imageUrl}" class="w-full h-44 object-cover">
+          <div class="p-4">
+            <h4 class="font-head">${attrs.Title}</h4>
+            <p class="mt-2 text-sm text-gray-600">${attrs.Description}</p>
+            <div class="mt-4 text-xs text-gray-500">${attrs.Date_Time}</div>
+          </div>
+        </article>
+      `;
+    });
 
-      data.data.forEach(item => {
-        let imageUrl = "https://placehold.co/400x300";
-        
-        // Image URL logic
-        if (item.Image && item.Image.url) {
-          imageUrl = item.Image.url.startsWith("http")
-            ? item.Image.url
-            : "https://authentic-activity-92e94f43c6.media.strapiapp.com" + item.Image.url;
-        }
-        
-        wrapper.innerHTML += `
-          <article class="rounded-lg overflow-hidden shadow-sm hover-lift">
-            <img src="${imageUrl}" class="w-full h-44 object-cover">
-            <div class="p-4">
-              <h4 class="font-head">${item.Title}</h4>
-              <p class="mt-2 text-sm text-gray-600">${item.Description}</p>
-              <div class="mt-4 text-xs text-gray-500">${item.Date_Time}</div>
-            </div>
-          </article>
-        `;
-      });
-
-    } catch (err) {
-      console.error("Aspen load error:", err);
-    }
+  } catch (err) {
+    console.error("Aspen load error:", err);
   }
-
-  loadAspenDiaries();
-
-});
+}
+// ... (rest of the script)
 </script>
 
 
