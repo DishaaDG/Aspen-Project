@@ -449,31 +449,31 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             wrapper.innerHTML = ""; // Clear previous items
 
+            // Iterate over each gallery entry (data.data)
             data.data.forEach(item => {
-                // Ensure we use 'attributes' for Strapi V4
-                const attrs = item.attributes;
+                // **NEW FIX:** Check for the 'Image' array directly inside the item
+                const imageArray = item.Image;
 
-                // Check for image data: Image is a single relation/file in this entry
-                const imageObject = attrs?.Image?.data;
+                if (imageArray && Array.isArray(imageArray)) {
+                    // Iterate over all images in the nested 'Image' array
+                    imageArray.forEach(image => {
+                        let imageUrl = image.url || "https://placehold.co/400x300";
 
-                if (imageObject && imageObject.attributes) {
-                    const imageAttributes = imageObject.attributes;
-                    let imageUrl = imageAttributes.url || "https://placehold.co/400x300";
-
-                    // Construct full URL if it's a relative path
-                    if (!imageUrl.startsWith("http")) {
-                        imageUrl = strapiBaseUrl + imageUrl;
-                    }
-                    
-                    // Template with lazy loading enabled (data-src instead of src)
-                    wrapper.innerHTML += `
-                        <div class="swiper-slide">
-                          <img data-src="${imageUrl}" 
-                               alt="${imageAttributes.alternativeText || 'Gallery image'}" 
-                               class="w-full h-80 object-cover rounded-xl shadow-md swiper-lazy" />
-                          <div class="swiper-lazy-preloader swiper-lazy-preloader-white"></div>
-                        </div>
-                    `;
+                        // Construct full URL if it's a relative path
+                        if (!imageUrl.startsWith("http")) {
+                            imageUrl = strapiBaseUrl + imageUrl;
+                        }
+                        
+                        // Template with lazy loading enabled (data-src instead of src)
+                        wrapper.innerHTML += `
+                            <div class="swiper-slide">
+                              <img data-src="${imageUrl}" 
+                                   alt="${image.alternativeText || 'Gallery image'}" 
+                                   class="w-full h-80 object-cover rounded-xl shadow-md swiper-lazy" />
+                              <div class="swiper-lazy-preloader swiper-lazy-preloader-white"></div>
+                            </div>
+                        `;
+                    });
                 }
             });
 
@@ -482,7 +482,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 slidesPerView: 1.2,
                 spaceBetween: 20,
                 loop: true,
-                // Add lazy loading feature
                 lazy: {
                     loadPrevNext: true, 
                 },
@@ -505,7 +504,6 @@ document.addEventListener("DOMContentLoaded", () => {
     loadGallery();
 });
 </script>
-
 
 
 
