@@ -554,6 +554,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const response = await fetch(aspenApi);
       const data = await response.json();
 
+      // FIX: Using the correct ID 'aspen-diaries-list'
       const wrapper = document.getElementById("aspen-diaries-list");
 
       if (!wrapper) {
@@ -564,20 +565,19 @@ document.addEventListener("DOMContentLoaded", () => {
       wrapper.innerHTML = "";
 
       data.data.forEach(item => {
-        // Use 'attributes' if it exists, otherwise use the item itself (for the flatter structure)
+        // Use 'attributes' if available, otherwise use the item itself
         const entry = item.attributes || item; 
         
         let imageUrl = "https://placehold.co/400x300";
         let imageObject = entry.Image; 
 
-        // 1. Try to access the medium format for optimal loading speed
+        // Logic to safely find the image URL (prioritizing optimized formats)
         if (imageObject && imageObject.formats && imageObject.formats.medium && imageObject.formats.medium.url) {
             let imgUrl = imageObject.formats.medium.url;
             imageUrl = imgUrl.startsWith("http")
               ? imgUrl
               : strapiBaseUrl + imgUrl;
         }
-        // 2. Fallback to the original URL
         else if (imageObject && imageObject.url) {
             let imgUrl = imageObject.url;
             imageUrl = imgUrl.startsWith("http")
@@ -585,7 +585,6 @@ document.addEventListener("DOMContentLoaded", () => {
               : strapiBaseUrl + imgUrl;
         }
         
-        // Use the 'entry' object for all fields (Title, Description, etc.)
         wrapper.innerHTML += `
           <article class="rounded-lg overflow-hidden shadow-sm hover-lift">
             <img src="${imageUrl}" alt="${entry.Title || 'Diary Image'}" class="w-full h-44 object-cover">
