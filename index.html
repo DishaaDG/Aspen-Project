@@ -438,53 +438,53 @@ loadUpcomingDrives();
   const galleryApi = "https://authentic-activity-92e94f43c6.strapiapp.com/api/galleries?populate=*";
 
   async function loadGallery() {
-    try {
-      const response = await fetch(galleryApi);
-      const data = await response.json();
+  try {
+    const response = await fetch(galleryApi);
+    const data = await response.json();
 
-      const wrapper = document.getElementById("gallery-wrapper");
+    const wrapper = document.getElementById("gallery-wrapper");
+    wrapper.innerHTML = ""; // Clear previous items
 
-      wrapper.innerHTML = ""; // clear old
+    data.data.forEach(item => {
+      let imageUrl = "https://placehold.co/400x300";
 
-      data.data.forEach(item => {
-        let imageUrl = "https://placehold.co/600x400";
+      // SAFE CHECK (this never crashes)
+      if (item.Image && item.Image.length > 0 && item.Image[0].url) {
+        imageUrl = item.Image[0].url.startsWith("http")
+          ? item.Image[0].url
+          : "https://authentic-activity-92e94f43c6.media.strapiapp.com" + item.Image[0].url;
+      }
 
-        // Your Strapi structure: Image is always an array
-        if (item.Image && item.Image.length > 0 && item.Image[0].url) {
-          imageUrl = item.Image[0].url.startsWith("http")
-            ? item.Image[0].url
-            : "https://authentic-activity-92e94f43c6.strapiapp.com" + item.Image[0].url;
-        }
+      wrapper.innerHTML += `
+        <div class="swiper-slide">
+          <img src="${imageUrl}" class="w-full h-80 object-cover rounded-xl shadow-md" />
+        </div>
+      `;
+    });
 
-        wrapper.innerHTML += `
-          <div class="swiper-slide">
-            <img src="${imageUrl}" class="w-full h-80 object-cover rounded-xl shadow-md" />
-          </div>
-        `;
-      });
+    // Reinitialize Swiper
+    new Swiper(".mySwiperGallery", {
+      slidesPerView: 1.2,
+      spaceBetween: 20,
+      loop: true,
+      pagination: { el: ".swiper-pagination", clickable: true },
+      navigation: {
+        nextEl: ".swiper-button-next",
+        prevEl: ".swiper-button-prev",
+      },
+      breakpoints: {
+        640: { slidesPerView: 2 },
+        1024: { slidesPerView: 3 },
+      }
+    });
 
-      // Reinitialize Swiper after loading dynamic slides
-      new Swiper(".mySwiperGallery", {
-        slidesPerView: 1.2,
-        spaceBetween: 20,
-        loop: true,
-        pagination: { el: ".swiper-pagination", clickable: true },
-        navigation: {
-          nextEl: ".swiper-button-next",
-          prevEl: ".swiper-button-prev",
-        },
-        breakpoints: {
-          640: { slidesPerView: 2 },
-          1024: { slidesPerView: 3 },
-        }
-      });
-
-    } catch (error) {
-      console.error("Error loading gallery:", error);
-    }
+  } catch (error) {
+    console.error("Gallery load error:", error);
   }
+}
 
-  loadGallery();
+loadGallery();
+
 </script>
 
 
