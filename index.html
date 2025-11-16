@@ -359,22 +359,15 @@ const upcomingDrivesApiUrl = "https://authentic-activity-92e94f43c6.strapiapp.co
 
 async function loadUpcomingDrives() {
     const container = document.getElementById("upcoming-drives-list");
-    
     container.innerHTML = "Loading upcoming drives...";
 
     try {
-        // Fetch is now simple, matching the working loadExpeditions structure:
-        const res = await fetch(upcomingDrivesApiUrl); 
-        
-        if (!res.ok) 
-            // This will catch the 403 or 401 error if the server is still blocking access
-            throw new Error(`HTTP error! status: ${res.status}`);
-        
+        const res = await fetch(upcomingDrivesApiUrl);
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
         const json = await res.json();
-        
-        // --- START SUCCESSFUL RENDERING LOGIC ---
-        container.innerHTML = ""; // Clear "Loading..."
+
+        container.innerHTML = ""; 
 
         if (!json.data || json.data.length === 0) {
             container.innerHTML = "No upcoming drives scheduled.";
@@ -382,19 +375,18 @@ async function loadUpcomingDrives() {
         }
 
         json.data.forEach(item => {
-            const drive = item.attributes || {}; 
+            // FIX: Strapi response does NOT have attributes
+            const drive = item; 
             
-            // Map your Strapi fields to variables
             const title = drive.Title || "Untitled Drive";
             const location = drive.Location || "Location not available";
             const dates = drive.Dates || "Dates not available";
-            
-            // Safely check for SpotsLeft
-            const spotsLeft = (drive.SpotsLeft !== undefined && drive.SpotsLeft !== null && drive.SpotsLeft > 0) 
-                ? `${drive.SpotsLeft} seats` 
-                : "Booking closed"; 
 
-            // Use your exact card structure with dynamic data injection
+            const spotsLeft = 
+                drive.SpotsLeft !== undefined && drive.SpotsLeft !== null && drive.SpotsLeft > 0
+                ? `${drive.SpotsLeft} seats`
+                : "Booking closed";
+
             const card = `
                 <div class="bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 p-6">
                     <h4 class="text-xl font-semibold text-gray-800 mb-2">${title}</h4>
@@ -408,15 +400,17 @@ async function loadUpcomingDrives() {
             `;
             container.innerHTML += card;
         });
-        // --- END SUCCESSFUL RENDERING LOGIC ---
 
     } catch (err) {
         console.error("Error loading upcoming drives:", err);
         container.innerHTML = "Failed to load drives.";
     }
 }
+
 loadUpcomingDrives();
 </script>
+
+    
 
  <!-- ========== GALLERY / TESTIMONIALS SLIDER ========== -->
     <!-- GALLERY (SWIPER) -->
