@@ -434,87 +434,44 @@ loadUpcomingDrives();
 </section>
 
 <script>
-  const galleryApiUrl = "https://authentic-activity-92e94f43c6.strapiapp.com/api/galleries?populate=*";
+const galleryApiUrl = "https://authentic-activity-92e94f43c6.strapiapp.com/api/galleries?populate=*";
 
-  async function loadGallery() {
-    const wrapper = document.getElementById("gallery-wrapper");
-    wrapper.innerHTML = "<div class='text-center w-full py-10'>Loading gallery...</div>";
+async function loadGallery() {
+    const container = document.querySelector(".mySwiperGallery .swiper-wrapper");
 
     try {
-      const res = await fetch(galleryApiUrl);
+        const res = await fetch(galleryApiUrl);
+        const json = await res.json();
 
-      if (!res.ok)
-        throw new Error(`HTTP error! Status: ${res.status}`);
+        container.innerHTML = "";
 
-      const json = await res.json();
-      wrapper.innerHTML = "";
+        json.data.forEach(item => {
+            const g = item.attributes;
 
-      if (!json.data || json.data.length === 0) {
-        wrapper.innerHTML = "<div class='text-center w-full py-10'>No images found.</div>";
-        return;
-      }
+            // SINGLE IMAGE CASE
+            const imgData = g.Image?.data;
+            const imgUrl = imgData
+                ? (imgData.attributes.url.startsWith("http")
+                    ? imgData.attributes.url
+                    : "https://authentic-activity-92e94f43c6.strapiapp.com" + imgData.attributes.url)
+                : "https://placehold.co/1200x700?text=No+Image";
 
-      json.data.forEach(item => {
-        const gallery = item.attributes || {};
+            const slide = `
+                <div class="swiper-slide">
+                    <img src="${imgUrl}" class="w-full h-80 object-cover rounded-xl shadow-md">
+                </div>
+            `;
 
-        // ❤️ FIELD: Image (multiple)
-        const images = gallery.Image?.data || [];
-
-        // If no images at all
-        if (images.length === 0) {
-          wrapper.innerHTML += `
-            <div class="swiper-slide">
-              <img src="https://via.placeholder.com/1200x700?text=No+Image" class="w-full h-80 object-cover rounded-xl shadow-md">
-            </div>`;
-          return;
-        }
-
-        // Generate slides for each image
-        images.forEach(pic => {
-          const imgUrl = pic.attributes?.url
-            ? pic.attributes.url
-            : "https://via.placeholder.com/1200x700?text=No+Image";
-
-          const slide = `
-            <div class="swiper-slide">
-              <img src="${imgUrl}" class="w-full h-80 object-cover rounded-xl shadow-md">
-            </div>
-          `;
-
-          wrapper.innerHTML += slide;
+            container.innerHTML += slide;
         });
-      });
-
-      // Re-init Swiper after dynamic content
-      setTimeout(() => {
-        new Swiper(".mySwiperGallery", {
-          slidesPerView: 1,
-          spaceBetween: 20,
-          loop: true,
-          autoplay: { delay: 2500 },
-          pagination: {
-            el: ".swiper-pagination",
-            clickable: true,
-          },
-          navigation: {
-            nextEl: ".swiper-button-next",
-            prevEl: ".swiper-button-prev",
-          },
-          breakpoints: {
-            768: { slidesPerView: 2 },
-            1024: { slidesPerView: 3 },
-          }
-        });
-      }, 300);
-
-    } catch (err) {
-      console.error("Error loading gallery:", err);
-      wrapper.innerHTML = "<div class='text-center w-full py-10'>Failed to load gallery.</div>";
+    } catch (error) {
+        console.error("Gallery load error:", error);
     }
-  }
+}
 
-  loadGallery();
+loadGallery();
 </script>
+
 
 
 
