@@ -355,13 +355,8 @@ loadExpeditions();
 </section>
 
 <script>
-// NOTE: REPLACE THIS URL WITH YOUR ACTUAL STRAPI BASE URL
-// ⚠️ REPLACE THIS WITH THE ACTUAL TOKEN YOU COPIED FROM STRAPI ADMIN ⚠️
-  
+// ⚠️ API Token to bypass 403 Forbidden error
 const API_TOKEN = 'cd32dbf6510bcd7b764d72b827608e74b6e11f8f7b9b1c498722eaf1c3d2309bbea12cc5c95abd60843987cffb84bd1da1b38ba815998e6a1bccbfe75ffbc54047fe2f0843eabf569caf0a23e89bb73c9fcd144e9bb16f9e8402a658c05631a0579016703faf63683d3bfbeeb87128058c56fb1a5231149de32ce4d1c016c663'; 
-  
-// API ID is confirmed to be upcoming-drives
-  
 const upcomingDrivesApiUrl = "https://authentic-activity-92e94f43c6.strapiapp.com/api/upcoming-drives?populate=*";
 
 async function loadUpcomingDrives() {
@@ -374,22 +369,52 @@ async function loadUpcomingDrives() {
         const res = await fetch(upcomingDrivesApiUrl, {
             method: 'GET',
             headers: {
-                // ADDING THE AUTHORIZATION HEADER FIXES THE 403 ERROR
+                // FIX: Send token to authorize the request (bypasses 403)
                 'Authorization': `Bearer ${API_TOKEN}`, 
                 'Content-Type': 'application/json'
             }
         });
 
-        // If the token is correct, this line should now pass (status 200)
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
         const json = await res.json();
-        // ... (rest of your successful data rendering code)
-        // ... (JSON parsing and card generation loop continues here)
         
+        // --- START SUCCESSFUL RENDERING LOGIC ---
+        container.innerHTML = ""; // Clear "Loading..."
+
+        if (!json.data || json.data.length === 0) {
+            container.innerHTML = "No upcoming drives scheduled.";
+            return;
+        }
+
+        json.data.forEach(item => {
+            const drive = item.attributes || {}; 
+            
+            // Map your Strapi fields to variables
+            const title = drive.Title || "Untitled Drive";
+            const location = drive.Location || "Location not available";
+            const dates = drive.Dates || "Dates not available";
+            const spotsLeft = drive.SpotsLeft ? `${drive.SpotsLeft} seats` : "Booking closed";
+
+            // Use your exact card structure with dynamic data injection
+            const card = `
+                <div class="bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 p-6">
+                    <h4 class="text-xl font-semibold text-gray-800 mb-2">${title}</h4>
+                    <p class="text-gray-500 mb-2"><strong>Location:</strong> ${location}</p>
+                    <p class="text-gray-500 mb-2"><strong>Dates:</strong> ${dates}</p>
+                    <p class="text-gray-500 mb-4"><strong>Spots Left:</strong> ${spotsLeft}</p>
+                    <div class="text-center">
+                        <a href="#contact" class="inline-block px-6 py-2 bg-[var(--terracotta)] text-white rounded-lg font-medium hover:bg-[var(--terracotta-dark)] transition-colors">Join</a>
+                    </div>
+                </div>
+            `;
+            container.innerHTML += card;
+        });
+        // --- END SUCCESSFUL RENDERING LOGIC ---
+
     } catch (err) {
         console.error("Error loading upcoming drives:", err);
-        container.innerHTML = "Failed to load drives. (Token access required)";
+        container.innerHTML = "Failed to load drives.";
     }
 }
 loadUpcomingDrives();
