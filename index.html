@@ -527,48 +527,51 @@ loadGallery();
 </section>
 
 <script>
-  
-const aspenApi =
-  "https://authentic-activity-92e94f43c6.strapiapp.com/api/aspen-diaries?populate=*";
+document.addEventListener("DOMContentLoaded", () => {
 
-async function loadAspenDiaries() {
-  try {
-    const response = await fetch(aspenApi);
-    const data = await response.json();
+  const aspenApi =
+    "https://authentic-activity-92e94f43c6.strapiapp.com/api/aspen-diaries?populate=*";
 
-    const wrapper = document.getElementById("aspen-wrapper");
-    wrapper.innerHTML = "";
+  async function loadAspenDiaries() {
+    try {
+      const response = await fetch(aspenApi);
+      const data = await response.json();
 
-    data.data.forEach(item => {
-      let imageUrl = "https://placehold.co/400x300";
+      const wrapper = document.getElementById("aspen-wrapper");
 
-      // ✔ Correct handling for SINGLE IMAGE
-      if (item.Image && item.Image.url) {
-        imageUrl = item.Image.url.startsWith("http")
-          ? item.Image.url
-          : "https://authentic-activity-92e94f43c6.media.strapiapp.com" + item.Image.url;
-      }
+      wrapper.innerHTML = "";
 
-      wrapper.innerHTML += `
-        <article class="rounded-lg overflow-hidden shadow-sm hover-lift">
-          <img src="${imageUrl}" alt="diary" class="w-full h-44 object-cover">
-          <div class="p-4">
-            <h4 class="font-head">${item.Title}</h4>
-            <p class="mt-2 text-sm text-gray-600">${item.Description}</p>
-            <div class="mt-4 text-xs text-gray-500">${item.Date_Time}</div>
-          </div>
-        </article>
-      `;
-    });
+      data.data.forEach(item => {
+        let imageUrl = "https://placehold.co/400x300";
 
-  } catch (err) {
-    console.error("Aspen load error:", err);
+        if (item.Image && item.Image.url) {
+          imageUrl = item.Image.url.startsWith("http")
+            ? item.Image.url
+            : "https://authentic-activity-92e94f43c6.media.strapiapp.com" + item.Image.url;
+        }
+
+        wrapper.innerHTML += `
+          <article class="rounded-lg overflow-hidden shadow-sm hover-lift">
+            <img src="${imageUrl}" class="w-full h-44 object-cover">
+            <div class="p-4">
+              <h4 class="font-head">${item.Title}</h4>
+              <p class="mt-2 text-sm text-gray-600">${item.Description}</p>
+              <div class="mt-4 text-xs text-gray-500">${item.Date_Time}</div>
+            </div>
+          </article>
+        `;
+      });
+
+    } catch (err) {
+      console.error("Aspen load error:", err);
+    }
   }
-}
 
-loadAspenDiaries();
+  loadAspenDiaries();
+
+});
 </script>
-    
+
 
    
 <!-- ========== FAQ SECTION ========== -->
