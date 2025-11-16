@@ -359,7 +359,6 @@ const upcomingDrivesApiUrl = "https://authentic-activity-92e94f43c6.strapiapp.co
 
 async function loadUpcomingDrives() {
     const container = document.getElementById("upcoming-drives-list");
-    if (!container) return; 
     
     container.innerHTML = "Loading upcoming drives...";
 
@@ -367,10 +366,10 @@ async function loadUpcomingDrives() {
         // Fetch is now simple, matching the working loadExpeditions structure:
         const res = await fetch(upcomingDrivesApiUrl); 
         
-        if (!res.ok) {
+        if (!res.ok) 
             // This will catch the 403 or 401 error if the server is still blocking access
             throw new Error(`HTTP error! status: ${res.status}`);
-        }
+        
 
         const json = await res.json();
         
